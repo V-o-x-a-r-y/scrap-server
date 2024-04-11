@@ -1,4 +1,6 @@
 const express = require('express');
+const https = require('https');
+const fs = require('fs');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
@@ -9,6 +11,12 @@ app.use(cors());
 app.use(bodyParser.json());
 
 let storedLinks = []; // Variable globale pour stocker les liens
+
+// Charger le certificat SSL
+const options = {
+  key: fs.readFileSync('server.key'),
+  cert: fs.readFileSync('server.cert')
+};
 
 app.post('/html', (req, res) => {
   const html = req.body;
@@ -25,7 +33,6 @@ app.post('/html', (req, res) => {
   }
 });
 
-
 // Route pour récupérer les liens stockés
 app.get('/links', (req, res) => {
   res.json({ links: storedLinks });
@@ -36,7 +43,7 @@ app.get('/reset', (req, res) => {
   res.send('Liens réinitialisés avec succès !');
 });
 
-
-app.listen(port, () => {
+// Créer un serveur HTTPS
+https.createServer(options, app).listen(port, () => {
   console.log(`Serveur démarré sur le port ${port}`);
 });
